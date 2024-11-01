@@ -1,0 +1,106 @@
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Josefin Sans', sans-serif;
+    padding: 0 !important;
+    overflow-y: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+    display: none;
+}
+
+.font-estetik {
+    font-family: 'Sacramento', cursive !important;
+    color: #4d320f !important;
+}
+
+.cropper {
+    width: 14rem;
+    height: 14rem;
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+}
+
+.cropper>img {
+    display: inline;
+    /* margin-top: -50%; */
+    /* margin: 0 auto; */
+    height: auto;
+    width: 100%;
+}
+
+.btn-music {
+    position: fixed;
+    bottom: 9vh;
+    right: 2vh;
+    z-index: 1055;
+}
+
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url(../assets/images/HF-BG.jpg);
+    z-index: 1056 !important;
+}
+
+.card-body {
+    overflow-wrap: break-word !important;
+}
+
+.mousey {
+    padding: 0.25rem 0.625rem;
+    height: 2rem;
+    border: 0.1rem solid #4d320f;
+    border-radius: 1.4rem;
+    opacity: 0.75;
+    box-sizing: content-box;
+}
+
+.bg-motifan {
+    background: linear-gradient(rgba(255, 255, 255, .3), rgba(255, 255, 255, .3)), url(../assets/images/HF-BG.jpg);
+}
+
+
+.bg-kedua {
+    background-color: #78BF84;
+}
+
+.scroller {
+    width: 0.25rem;
+    height: 0.625rem;
+    border-radius: 25%;
+    background-color: #4d320f;
+    animation-name: scroll;
+    animation-duration: 2.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.text-utama {
+    color: #4d320f;
+}
+
+@keyframes scroll {
+    0% {
+        opacity: 0;
+    }
+
+    10% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(1rem);
+        opacity: 0;
+    }
+}
