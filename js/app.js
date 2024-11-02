@@ -617,6 +617,32 @@ const opacity = () => {
     });
 };
 
+const fotoInject = (folder, listData, idCont, idIndic, dataTarget) => {
+    let contFoto = document.getElementById(idCont);
+    let indicFoto = document.getElementById(idIndic);
+
+    let eRes = "";
+    let eResIndic = "";
+
+    for (let i = 0; i < listData.length; i++) {
+        let active = i == 0 ? "active" : "";
+        let activeIndic = i == 0 ? `class="active" aria-current="true"` : "";
+
+        let curr = `<div class="carousel-item ${active}">
+                    <img src="${folder}${listData[i]}" alt="${listData[i]}" class="d-block w-100" onclick="modalFoto(this)">
+                </div>`;
+
+        let currIndic = `<button type="button" data-bs-target="${dataTarget}" data-bs-slide-to="${i}"
+                          ${activeIndic} aria-label="Slide ${i + 1}">
+                        </button>`;
+        eRes += curr;
+        eResIndic += currIndic;
+    }
+
+    contFoto.innerHTML = eRes;
+    indicFoto.innerHTML = eResIndic;
+};
+
 const modalFoto = (img) => {
     let modal = new bootstrap.Modal('#modalFoto');
     document.getElementById('showModalFoto').src = img.src;
@@ -637,10 +663,21 @@ window.addEventListener('load', () => {
         <h2 class="text-utama">${escapeHtml(name)}</h2>
         `;
 
-        // document.getElementById('formnama').value = name;
         document.getElementById('namatamu').appendChild(div);
     }
 
     modal.show();
     opacity();
+
+    // foto galeri
+    let listFotoHeader = ["IMG_0863.JPG", "IMG_1018.JPG", "IMG_1019.JPG", "IMG_1020.JPG", "IMG_1013.JPG", "IMG_1014.JPG"];
+    let listFotoDetail = ["IMG_1017.JPG", "IMG_1008.JPG", "IMG_1009.JPG", "IMG_1010.JPG", "IMG_1011.JPG", "IMG_1021.JPG"];
+    let folder = "assets/images/";
+
+    // header
+    fotoInject(folder, listFotoHeader, "contFotoHeader", "fotoHeaderIndic", "#carouselExampleIndicators");
+
+    // // detail
+    fotoInject(folder, listFotoDetail, "contFotoDetail", "fotoDetailIndic", "#carousel2");
+
 }, false);
