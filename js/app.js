@@ -652,6 +652,7 @@ const modalFoto = (img) => {
 };
 
 window.addEventListener('load', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     // audio.play();
     let modal = new bootstrap.Modal('#exampleModal');
     let name = (new URLSearchParams(window.location.search)).get('to') ?? '';
