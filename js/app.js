@@ -72,10 +72,12 @@ const timer = () => {
 };
 
 const buka = async () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     document.getElementById('tombol-musik').style.display = 'block';
     audio.play();
     AOS.init();
     // await login();
+
     timer();
 };
 
@@ -650,6 +652,7 @@ const modalFoto = (img) => {
 };
 
 window.addEventListener('load', () => {
+    // audio.play();
     let modal = new bootstrap.Modal('#exampleModal');
     let name = (new URLSearchParams(window.location.search)).get('to') ?? '';
 
