@@ -1,3 +1,5 @@
+const sheetURL = 'https://script.google.com/macros/s/AKfycby9tyq0fOlaEo6mH5NrOAYg1sO2DQWzmGR-or3cO9aNiHE2LiLzh21EH4zVqbZM0BmUQw/exec';
+
 const audio = (() => {
     let instance = null;
 
@@ -76,7 +78,7 @@ const buka = async () => {
     document.getElementById('tombol-musik').style.display = 'block';
     audio.play();
     AOS.init();
-    // await login();
+    await login();
 
     timer();
 };
@@ -136,181 +138,19 @@ const getUrl = (optional = null) => {
     return url;
 };
 
-const balasan = async (button, msg = null) => {
-    button.disabled = true;
-    let tmp = button.innerText;
-    button.innerText = msg ?? 'Loading...';
-
-    let id = button.getAttribute('data-uuid').toString();
-    let token = localStorage.getItem('token') ?? '';
-
-    if (token.length == 0) {
-        alert('Terdapat kesalahan, token kosong !');
-        window.location.reload();
-        return;
-    }
-
-    const BALAS = document.getElementById('balasan');
-    BALAS.innerHTML = renderLoading(1);
-    document.getElementById('hadiran').style.display = 'none';
-    document.getElementById('labelhadir').style.display = 'none';
-
-    await fetch(getUrl('/api/comment/' + id), parseRequest('GET', token))
-        .then((res) => res.json())
-        .then((res) => {
-            if (res.code == 200) {
-                document.getElementById('kirim').style.display = 'none';
-                document.getElementById('batal').style.display = 'block';
-                document.getElementById('kirimbalasan').style.display = 'block';
-                document.getElementById('idbalasan').value = id;
-
-                BALAS.innerHTML = `
-                <div class="card-body bg-light shadow p-3 my-2 rounded-4">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center">
-                        <p class="text-dark text-truncate m-0 p-0" style="font-size: 0.95rem;">
-                            <strong>${escapeHtml(res.data.nama)}</strong>
-                        </p>
-                        <small class="text-dark m-0 p-0" style="font-size: 0.75rem;">${res.data.created_at}</small>
-                    </div>
-                    <hr class="text-dark my-1">
-                    <p class="text-dark m-0 p-0" style="white-space: pre-line">${escapeHtml(res.data.komentar)}</p>
-                </div>`;
-            }
-
-            if (res.error.length != 0) {
-                if (res.error[0] == 'Expired token') {
-                    alert('Terdapat kesalahan, token expired !');
-                    window.location.reload();
-                    return;
-                }
-
-                alert(res.error[0]);
-            }
-        })
-        .catch((err) => {
-            resetForm();
-            alert(err);
-        });
-
-    document.getElementById('ucapan').scrollIntoView({ behavior: 'smooth' });
-    button.disabled = false;
-    button.innerText = tmp;
-};
-
-const kirimBalasan = async () => {
-    let nama = document.getElementById('formnama').value;
-    let komentar = document.getElementById('formpesan').value;
-    let token = localStorage.getItem('token') ?? '';
-    let id = document.getElementById('idbalasan').value;
-
-    if (token.length == 0) {
-        alert('Terdapat kesalahan, token kosong !');
-        window.location.reload();
-        return;
-    }
-
-    if (nama.length == 0) {
-        alert('nama tidak boleh kosong');
-        return;
-    }
-
-    if (nama.length >= 35) {
-        alert('panjangan nama maksimal 35');
-        return;
-    }
-
-    if (komentar.length == 0) {
-        alert('pesan tidak boleh kosong');
-        return;
-    }
-
-    document.getElementById('formnama').disabled = true;
-    document.getElementById('formpesan').disabled = true;
-
-    document.getElementById('batal').disabled = true;
-    document.getElementById('kirimbalasan').disabled = true;
-    let tmp = document.getElementById('kirimbalasan').innerHTML;
-    document.getElementById('kirimbalasan').innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Loading...`;
-
-    let isSuccess = false;
-    await fetch(
-        getUrl('/api/comment'),
-        parseRequest('POST', token, {
-            nama: nama,
-            id: id,
-            komentar: komentar
-        }))
-        .then((res) => res.json())
-        .then((res) => {
-            if (res.code == 201) {
-                isSuccess = true;
-            }
-
-            if (res.error.length != 0) {
-                if (res.error[0] == 'Expired token') {
-                    alert('Terdapat kesalahan, token expired !');
-                    window.location.reload();
-                    return;
-                }
-
-                alert(res.error[0]);
-            }
-        })
-        .catch((err) => {
-            resetForm();
-            alert(err);
-        });
-
-    if (isSuccess) {
-        await ucapan();
-        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-        resetForm();
-    }
-
-    document.getElementById('batal').disabled = false;
-    document.getElementById('kirimbalasan').disabled = false;
-    document.getElementById('kirimbalasan').innerHTML = tmp;
-    document.getElementById('formnama').disabled = false;
-    document.getElementById('formpesan').disabled = false;
-};
-
-const innerCard = (comment) => {
-    let result = '';
-
-    comment.forEach((data) => {
-        result += `
-        <div class="card-body border-start bg-light py-2 ps-2 pe-0 my-2 ms-2 me-0" id="${data.uuid}">
-            <div class="d-flex flex-wrap justify-content-between align-items-center">
-                <p class="text-dark text-truncate m-0 p-0" style="font-size: 0.95rem;">
-                    <strong>${escapeHtml(data.nama)}</strong>
-                </p>
-                <small class="text-dark m-0 p-0" style="font-size: 0.75rem;">${data.created_at}</small>
-            </div>
-            <hr class="text-dark my-1">
-            <p class="text-dark mt-0 mb-1 mx-0 p-0" style="white-space: pre-line">${escapeHtml(data.komentar)}</p>
-            <button style="font-size: 0.8rem;" onclick="balasan(this)" data-uuid="${data.uuid}" class="btn btn-sm btn-outline-dark rounded-4 py-0">Balas</button>
-            ${innerCard(data.comment)}
-        </div>`;
-    });
-
-    return result;
-};
-
 const renderCard = (data) => {
     const DIV = document.createElement('div');
     DIV.classList.add('mb-3');
     DIV.innerHTML = `
-    <div class="card-body bg-light shadow p-3 m-0 rounded-4" id="${data.uuid}">
+    <div class="card-body bg-light shadow p-3 m-0 rounded-4">
         <div class="d-flex flex-wrap justify-content-between align-items-center">
             <p class="text-dark text-truncate m-0 p-0" style="font-size: 0.95rem;">
-                <strong class="me-1">${escapeHtml(data.nama)}</strong><i class="fa-solid ${data.hadir ? 'fa-circle-check text-success' : 'fa-circle-xmark text-danger'}"></i>
+                <strong class="me-1">${escapeHtml(data.nama)}</strong><i class="fa-solid ${data.hadir == 1 ? 'fa-circle-check text-success' : 'fa-circle-xmark text-danger'}"></i>
             </p>
-            <small class="text-dark m-0 p-0" style="font-size: 0.75rem;">${data.created_at}</small>
+            <small class="text-dark m-0 p-0" style="font-size: 0.75rem;">${data.timestamp}</small>
         </div>
         <hr class="text-dark my-1">
         <p class="text-dark mt-0 mb-1 mx-0 p-0" style="white-space: pre-line">${escapeHtml(data.komentar)}</p>
-        <button style="font-size: 0.8rem;" onclick="balasan(this)" data-uuid="${data.uuid}" class="btn btn-sm btn-outline-dark rounded-4 py-0">Balas</button>
-        ${innerCard(data.comment)}
     </div>`;
     return DIV;
 };
@@ -411,82 +251,46 @@ const pagination = (() => {
 const ucapan = async () => {
     const UCAPAN = document.getElementById('daftarucapan');
     UCAPAN.innerHTML = renderLoading(pagination.getPer());
-    let token = localStorage.getItem('token') ?? '';
 
-    if (token.length == 0) {
-        alert('Terdapat kesalahan, token kosong !');
-        window.location.reload();
-        return;
-    }
 
-    await fetch(getUrl(`/api/comment?per=${pagination.getPer()}&next=${pagination.getNext()}`), parseRequest('GET', token))
+    await fetch(sheetURL)
         .then((res) => res.json())
         .then((res) => {
-            if (res.code == 200) {
+            if (res !== null && res.length != 0) {
                 UCAPAN.innerHTML = null;
-                res.data.forEach((data) => UCAPAN.appendChild(renderCard(data)));
-                pagination.setResultData(res.data.length);
+                // res.forEach((data) => UCAPAN.appendChild(renderCard(data)));
+                for (let index = 0; index < res.length; index++) {
+                    UCAPAN.appendChild(renderCard(res[index]));
+                }
+                pagination.setResultData(res.length);
 
-                if (res.data.length == 0) {
+                if (res.length == 0) {
                     UCAPAN.innerHTML = `<div class="h6 text-center">Tidak ada data</div>`;
                 }
             }
 
-            if (res.error.length != 0) {
-                if (res.error[0] == 'Expired token') {
-                    alert('Terdapat kesalahan, token expired !');
-                    window.location.reload();
-                    return;
-                }
+            // if (res.error.length != 0) {
+            //     if (res.error[0] == 'Expired token') {
+            //         alert('Terdapat kesalahan, token expired !');
+            //         window.location.reload();
+            //         return;
+            //     }
 
-                alert(res.error[0]);
-            }
+            //     alert(res.error[0]);
+            // }
         })
         .catch((err) => alert(err));
 };
 
 const login = async () => {
     document.getElementById('daftarucapan').innerHTML = renderLoading(pagination.getPer());
-    let body = document.querySelector('body');
-
-    await fetch(
-        getUrl('/api/login'),
-        parseRequest('POST', null, {
-            email: body.getAttribute('data-email'),
-            password: body.getAttribute('data-password')
-        }))
-        .then((res) => res.json())
-        .then((res) => {
-            if (res.code == 200) {
-                localStorage.removeItem('token');
-                localStorage.setItem('token', res.data.token);
-                ucapan();
-            }
-
-            if (res.error.length != 0) {
-                alert('Terdapat kesalahan, ' + res.error[0]);
-                window.location.reload();
-                return;
-            }
-        })
-        .catch(() => {
-            alert('Terdapat kesalahan, otomatis reload halaman');
-            window.location.reload();
-            return;
-        });
+    ucapan();
 };
 
 const kirim = async () => {
     let nama = document.getElementById('formnama').value;
     let hadir = document.getElementById('hadiran').value;
     let komentar = document.getElementById('formpesan').value;
-    let token = localStorage.getItem('token') ?? '';
-
-    if (token.length == 0) {
-        alert('Terdapat kesalahan, token kosong !');
-        window.location.reload();
-        return;
-    }
 
     if (nama.length == 0) {
         alert('nama tidak boleh kosong');
@@ -516,28 +320,25 @@ const kirim = async () => {
     let tmp = document.getElementById('kirim').innerHTML;
     document.getElementById('kirim').innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Loading...`;
 
-    await fetch(
-        getUrl('/api/comment'),
-        parseRequest('POST', token, {
-            nama: nama,
-            hadir: hadir == 1,
-            komentar: komentar
-        }))
+    formData = {
+        nama: nama,
+        hadir: hadir,
+        komentar: komentar
+    };
+
+    await fetch(sheetURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
         .then((res) => res.json())
         .then((res) => {
-            if (res.code == 201) {
+            if (res.result == "success") {
                 resetForm();
                 pagination.reset();
-            }
-
-            if (res.error.length != 0) {
-                if (res.error[0] == 'Expired token') {
-                    alert('Terdapat kesalahan, token expired !');
-                    window.location.reload();
-                    return;
-                }
-
-                alert(res.error[0]);
             }
         })
         .catch((err) => {
@@ -674,14 +475,42 @@ window.addEventListener('load', () => {
     opacity();
 
     // foto galeri
-    let listFotoHeader = ["IMG_0863.JPG", "IMG_1018.JPG", "IMG_1019.JPG", "IMG_1020.JPG", "IMG_1013.JPG", "IMG_1014.JPG"];
-    let listFotoDetail = ["IMG_1017.JPG", "IMG_1008.JPG", "IMG_1009.JPG", "IMG_1010.JPG", "IMG_1011.JPG", "IMG_1021.JPG"];
-    let folder = "assets/images/";
+    // let listFotoHeader = ["IMG_0863.JPG", "IMG_1018.JPG", "IMG_1019.JPG", "IMG_1020.JPG", "IMG_1013.JPG", "IMG_1014.JPG"];
+    // let listFotoDetail = ["IMG_1017.JPG", "IMG_1008.JPG", "IMG_1009.JPG", "IMG_1010.JPG", "IMG_1011.JPG", "IMG_1021.JPG"];
+    // let folder = "assets/images/";
 
-    // header
-    fotoInject(folder, listFotoHeader, "contFotoHeader", "fotoHeaderIndic", "#carouselExampleIndicators");
+    // // header
+    // fotoInject(folder, listFotoHeader, "contFotoHeader", "fotoHeaderIndic", "#carouselExampleIndicators");
 
-    // // detail
-    fotoInject(folder, listFotoDetail, "contFotoDetail", "fotoDetailIndic", "#carousel2");
+    // // // detail
+    // fotoInject(folder, listFotoDetail, "contFotoDetail", "fotoDetailIndic", "#carousel2");
 
 }, false);
+
+let bgState = 1;
+setInterval(function () {
+    const bgKedua = document.getElementsByClassName("bg-kedua");
+
+    // Add a slight delay before removing the class
+    setTimeout(() => {
+        bgKedua[0].classList.remove("bg-" + bgState);
+        bgState = bgState === 1 ? 2 : 1;
+        bgKedua[0].classList.add("bg-" + bgState);
+    }, 50); // Adjust the delay as needed to ensure smooth transition
+
+}, 3000);
+
+
+const getDataKomentar = () => {
+
+
+    fetch(sheetURL)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+}
+
